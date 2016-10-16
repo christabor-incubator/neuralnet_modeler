@@ -1,7 +1,7 @@
 $(document).ready(function(){
     var num_layers = 1;
     // Create the input graph
-    var g = new dagreD3.graphlib.Graph().setGraph({});
+    var g = new dagreD3.graphlib.Graph({directed: true, compound: true, multigraph: false}).setGraph({});
     var padding = 10;
     // Create the renderer
     var render = new dagreD3.render();
@@ -28,12 +28,29 @@ $(document).ready(function(){
         });
     }
 
+    function getSum(index) {
+        // Return sum of inputs for a layer
+        var weights = $.map(network[index].factors, function(factor, k){
+            return factor.is_active ? factor.weight : 0;
+        });
+        return d3.sum(weights);
+    }
+
     function reRender() {
         clearGraph();
         var num_layers = network.length;
-        var offset = 20;
+        var curr_layer_index = 0;
         $.each(network, function(layer_k, layer){
+            // Set layer label (group)
+            var sum = getSum(curr_layer_index);
+            g.setNode(layer.id, {
+                label: layer.name + ' / Sum = ' + sum + ' / Threshold = ' + layer.threshold + ' Will fire? ' + (sum >= layer.threshold ? 'Yes': 'No'),
+                clusterLabelPos: 'bottom',
+                style: 'fill: #D0FAE4'
+            });
+            curr_layer_index += 1;
             $.each(layer.factors, function(factors_k, factor){
+                // Set layer node
                 var opts = {
                     label: factor.label,
                     class: factor.is_active ? 'active' : 'inactive',
@@ -42,11 +59,14 @@ $(document).ready(function(){
                     height: 25
                 };
                 g.setNode(factor.id, opts);
-                if(layer_k === 0 || layer_k === num_layers) return;
+                // Add to group for visual grouping
+                g.setParent(factor.id, layer.id);
+                // Can't link to prev or last if starting or ending...
+                if(layer_k === 0 || layer_k === num_layers) {return;}
                 // Link previous layers' nodes to all of this layers' nodes.
                 var prev_layer = network[layer_k - 1];
                 $.each(prev_layer.factors, function(k, prev_factor){
-                    g.setEdge(prev_factor.id, factor.id, {arrowhead: 'vee', label: prev_factor.weight});
+                    g.setEdge(prev_factor.id, factor.id, {lineInterpolate: 'basis', arrowhead: 'vee', label: prev_factor.weight});
                 });
             });
         });
@@ -74,7 +94,7 @@ $(document).ready(function(){
         reRender();
     });
 
-    $('.layers').on('keyup', '[contenteditable]', function(e){
+    $('.layers').on('keypress', '[contenteditable]', function(e){
         updateNetwork();
         reRender();
     });
@@ -86,8 +106,8 @@ $(document).ready(function(){
     $('.layers').on('click', '#add-factor', function(e){
         e.preventDefault();
         var row = ['<tr><td contenteditable="true">Varname</td>',
-                   '<td contenteditable="true">0.0</td>',
-                   '<td><input type="checkbox" class="node-active" /></td>',
+                   '<td contenteditable="true">0</td>',
+                   '<td><input type="checkbox" checked="checked" class="node-active" /></td>',
                    '<td><a href="#" class="remove-factor btn btn-danger btn-xs">',
                    '<span class="fa fa-times"></span></a></td></tr>'
                    ].join('');
@@ -130,6 +150,7 @@ $(document).ready(function(){
             network.push({
                 name: layer.find('.layername').text(),
                 factors: layer_factors,
+                threshold: parseInt(layer.find('.threshold').text(), 10),
                 id: uid()
             });
         });
