@@ -1,0 +1,49 @@
+body {
+    color: #444;
+}
+
+/* UI */
+
+[contenteditable] {
+    border-bottom: 2px dotted #ccc;
+    background-color: #FFF2E8;
+    padding: 0.5em;
+}
+[contenteditable]:hover {
+    color: black;
+    background-color: #FFF9AE;
+}
+.layer {
+    background-color: #f1f1f1;
+    padding: 0.8em;
+    border:  1px solid #ccc;
+    margin-bottom: 1em;
+}
+
+/* Nodes */
+
+.node circle {
+    fill: #f1f1f1;
+    stroke: black;
+    stroke-width: 2px;
+}
+.node text {
+}
+.node.inactive circle,
+.node.inactive text {
+    opacity: 0.3;
+}
+
+/* Edges */
+
+.edgePath path {
+    stroke-width: 2px;
+}
+.edgePath path,
+.edgePath marker {
+    stroke: #555;
+}
+.edgePath marker {
+    stroke-width: 0;
+    fill:  #555;
+}
