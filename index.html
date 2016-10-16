@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bootstrap theme</title>
+    <link rel="stylesheet" href="bootstrap.min.css">
+    <style>
+        [contenteditable] {
+            border-bottom: 2px dotted #ccc;
+            background-color: #FFF2E8;
+            padding: 0.5em;
+        }
+        .layer {
+            background-color: #f1f1f1;
+            padding: 0.8em;
+            border:  1px solid #ccc;
+            margin-bottom: 1em;
+        }
+        circle {
+            fill: #f1f1f1;
+            stroke: black;
+            stroke-width: 2px;
+        }
+        .edgePath {
+            stroke-width: 2px;
+            stroke: #666;
+        }
+        text {
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <h1>Neural network modeler <small>A visual tool to help facilitate modeling a neural network problem.</small></h1>
+            <hr>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-3">
+            <div class="layers">
+                <h2>Layers</h2>
+                <div class="layer">
+                    <h3 class="layername" contenteditable="true">Layer 1</h3>
+                    <table class="table table-striped table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>Label</th>
+                                <th>Weight</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    <a href="#" class="btn btn-success btn-xs" id="add-factor">Add factor</a>
+                    <h4>Threshold</h4>
+                    <p>Current firing threshold is <strong id="threshold" contenteditable="true">0.0</strong></p>
+                </div>
+            </div>
+            <hr>
+            <a href="#" class="btn btn-success btn-md" id="add-layer">Add layer</a>
+        </div>
+        <div class="col-md-3 hidden">
+            <h2>Scenarios</h2>
+            <div>
+                Example output scenarios:
+
+                <table id="scenarios" class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Label</th>
+                            <th>Weight</th>
+                            <th>0/1?</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>X</td>
+                            <td>2</td>
+                            <td>0</td>
+                        </tr>
+                        <tr>
+                            <td>Y</td>
+                            <td>3</td>
+                            <td>0</td>
+                        </tr>
+                        <tr>
+                            <td>Z</td>
+                            <td>3</td>
+                            <td>1</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                X = 0 (Weight 2)
+                Y = 0 (Weight 3)
+                Z = 1 (Weight 4)
+
+                Sum (4) > Threshold (7) ? No. Will not fire.
+
+                X = 1 (Weight 2)
+                Y = 1 (Weight 3)
+                Z = 1 (Weight 4)
+
+                Sum (9) > Threshold (7) ? Yes. Will fire.
+
+            </div>
+        </div>
+        <div class="col-md-6">
+            <h2>Graph visual</h2>
+            <svg id="graph" width="100%" height="100%"></svg>
+            <div class="text-muted">
+                <hr>
+                <p class="text-center">
+                    <a href="#debug" data-toggle="collapse">Debug</a>
+                </p>
+                <div id="debug" class="collapse">
+                    <pre><code></code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="jquery.min.js"></script>
+<script src="bootstrap.min.js"></script>
+
+<script src="d3.min.js"></script>
+<!-- <script src="dagre.min.js"></script> -->
+<script src="dagre-d3.min.js"></script>
+<script>
+    $(document).ready(function(){
+        var num_layers = 1;
+        // Create the input graph
+        var g = new dagreD3.graphlib.Graph().setGraph({});
+        var padding = 10;
+        // Create the renderer
+        var render = new dagreD3.render();
+        var network = [];
+
+        // var zoom = d3.behavior.zoom().on("zoom", function() {
+        //     svg_group.attr("transform", "translate(" + d3.event.translate + ")" + "scale(" + d3.event.scale + ")");
+        // });
+
+        function uid() {
+            function r() {
+                return ~~(Math.random() * 10000);
+            }
+            return r() + '-' + r() + '-' + r();
+        }
+
+        window.network = network;
+        // Set up an SVG group so that we can translate the final graph.
+        var svg = d3.select('svg');
+        var svg_group = svg.append('g');
+
+        function clearGraph() {
+            g.nodes().forEach(function(id){
+                g.removeNode(id);
+            });
+        }
+
+        function reRender() {
+            clearGraph();
+            var num_layers = network.length;
+            var offset = 20;
+            $.each(network, function(layer_k, layer){
+                $.each(layer.factors, function(factors_k, factor){
+                    var opts = {label: factor.label, shape: 'circle', width: 50, height: 25};
+                    g.setNode(factor.id, opts);
+                    if(layer_k === 0 || layer_k === num_layers) return;
+                    // Link previous layers' nodes to all of this layers' nodes.
+                    var prev_layer = network[layer_k - 1];
+                    $.each(prev_layer.factors, function(k, prev_factor){
+                        g.setEdge(prev_factor.id, factor.id, {label: prev_factor.weight});
+                    });
+                });
+            });
+
+            // Run the renderer. This is what draws the final graph.
+            render(svg_group, g);
+
+            // Center the graph
+            // var x_center_offset = (svg_width - g.graph().width) / 2;
+            // svg_group.attr('transform', translate(svg_width / 2, svg_height / 2));
+            // svg_group.attr('transform', 'translate(' + x_center_offset + ', 20)');
+            // svg.attr('height', g.graph().height + 40);
+            svg.attr('viewBox', '0 0 ' + g.graph().width + ' ' + g.graph().height);
+
+            // svg.call(zoom);
+            // var initialScale = 0.75;
+            // zoom.translate([(svg.attr("width") - g.graph().width * initialScale) / 2, 20])
+            //     .scale(initialScale)
+            //     .event(svg);
+            // svg.attr('height', g.graph().height * initialScale + 40);
+        }
+
+        $('.layers').on('keyup', '[contenteditable]', function(e){
+            updateNetwork();
+            reRender();
+        });
+
+        function translate(x, y) {
+            return 'translate(' + x + ',' + y + ')';
+        }
+
+        $('.layers').on('click', '#add-factor', function(e){
+            e.preventDefault();
+            var row = '<tr><td contenteditable="true">Varname</td><td contenteditable="true">0.0</td></tr>';
+            $(this).parent().find('table').find('tbody').append(row);
+            updateNetwork();
+            reRender();
+        });
+
+        $('#add-layer').on('click', function(e){
+            e.preventDefault();
+            var layer = $('.layer').last().clone();
+            num_layers = $('.layer').length + 1;
+            layer.find('tbody').empty();
+            layer.find('.layername').text('Layer ' + num_layers);
+            $('.layers').append(layer);
+            updateNetwork();
+            reRender();
+        });
+
+        function updateNetwork() {
+            // Reset value each time
+            network = [];
+            $('.layer').each(function(k, layer){
+                var layer = $(layer);
+                var layer_factors = [];
+                $(layer).find('table tbody > tr').each(function(i, factor){
+                    layer_factors.push({
+                        label: $(factor).find('td:first').text(),
+                        weight: $(factor).find('td:last').text(),
+                        id: uid()
+                    })
+                });
+                network.push({
+                    name: layer.find('.layername').text(),
+                    factors: layer_factors,
+                    id: uid()
+                });
+            });
+            $('#debug').find('code').text(JSON.stringify(network, null, 4));
+        }
+
+        updateNetwork();
+        reRender();
+    });
+</script>
+</body>
+</html>
