@@ -30,12 +30,16 @@
 
         /* Nodes */
 
-        circle {
+        .node circle {
             fill: #f1f1f1;
             stroke: black;
             stroke-width: 2px;
         }
-        text {
+        .node text {
+        }
+        .node.inactive circle,
+        .node.inactive text {
+            opacity: 0.3;
         }
 
         /* Edges */
@@ -72,6 +76,7 @@
                             <tr>
                                 <th>Label</th>
                                 <th>Weight</th>
+                                <th>On?</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -84,52 +89,6 @@
             </div>
             <hr>
             <a href="#" class="btn btn-success btn-md" id="add-layer">Add layer</a>
-        </div>
-        <div class="col-md-3 hidden">
-            <h2>Scenarios</h2>
-            <div>
-                Example output scenarios:
-
-                <table id="scenarios" class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Label</th>
-                            <th>Weight</th>
-                            <th>0/1?</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>X</td>
-                            <td>2</td>
-                            <td>0</td>
-                        </tr>
-                        <tr>
-                            <td>Y</td>
-                            <td>3</td>
-                            <td>0</td>
-                        </tr>
-                        <tr>
-                            <td>Z</td>
-                            <td>3</td>
-                            <td>1</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                X = 0 (Weight 2)
-                Y = 0 (Weight 3)
-                Z = 1 (Weight 4)
-
-                Sum (4) > Threshold (7) ? No. Will not fire.
-
-                X = 1 (Weight 2)
-                Y = 1 (Weight 3)
-                Z = 1 (Weight 4)
-
-                Sum (9) > Threshold (7) ? Yes. Will fire.
-
-            </div>
         </div>
         <div class="col-md-6">
             <h2>Graph visual</h2>
@@ -145,6 +104,11 @@
             </div>
         </div>
     </div>
+    <footer class="row">
+        <div class="col-md-12 text-center">
+            <small class="text-muted">Copyright &copy; 2016 Chris Tabor.</small>
+        </div>
+    </footer>
 </div>
 <script src="jquery.min.js"></script>
 <script src="bootstrap.min.js"></script>
@@ -172,7 +136,6 @@
             return r() + '-' + r() + '-' + r();
         }
 
-        window.network = network;
         // Set up an SVG group so that we can translate the final graph.
         var svg = d3.select('svg');
         var svg_group = svg.append('g');
@@ -189,13 +152,18 @@
             var offset = 20;
             $.each(network, function(layer_k, layer){
                 $.each(layer.factors, function(factors_k, factor){
-                    var opts = {label: factor.label, shape: 'circle', width: 50, height: 25};
+                    var opts = {
+                        label: factor.label,
+                        class: factor.is_active ? 'active' : 'inactive',
+                        shape: 'circle',
+                        width: 50,
+                        height: 25
+                    };
                     g.setNode(factor.id, opts);
                     if(layer_k === 0 || layer_k === num_layers) return;
                     // Link previous layers' nodes to all of this layers' nodes.
                     var prev_layer = network[layer_k - 1];
                     $.each(prev_layer.factors, function(k, prev_factor){
-                        console.log(prev_factor.weight);
                         g.setEdge(prev_factor.id, factor.id, {arrowhead: 'vee', label: prev_factor.weight});
                     });
                 });
@@ -219,6 +187,11 @@
             // svg.attr('height', g.graph().height * initialScale + 40);
         }
 
+        $('.layers').on('click', '.node-active', function(e){
+            updateNetwork();
+            reRender();
+        });
+
         $('.layers').on('keyup', '[contenteditable]', function(e){
             updateNetwork();
             reRender();
@@ -232,6 +205,7 @@
             e.preventDefault();
             var row = ['<tr><td contenteditable="true">Varname</td>',
                        '<td contenteditable="true">0.0</td>',
+                       '<td><input type="checkbox" class="node-active" /></td>',
                        '<td><a href="#" class="remove-factor btn btn-danger btn-xs">',
                        '<span class="fa fa-times"></span></a></td></tr>'
                        ].join('');
@@ -267,6 +241,7 @@
                     layer_factors.push({
                         label: $(factor).find('td:first').text(),
                         weight: $(factor).find('td').eq(1).text(),
+                        is_active: $(factor).find('td').eq(2).find('input').is(':checked'),
                         id: uid()
                     })
                 });
