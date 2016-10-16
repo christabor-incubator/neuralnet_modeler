@@ -4,11 +4,22 @@
     <meta charset="UTF-8">
     <title>Bootstrap theme</title>
     <link rel="stylesheet" href="bootstrap.min.css">
+    <link rel="stylesheet" href="font-awesome.min.css">
     <style>
+        body {
+            color: #444;
+        }
+
+        /* UI */
+
         [contenteditable] {
             border-bottom: 2px dotted #ccc;
             background-color: #FFF2E8;
             padding: 0.5em;
+        }
+        [contenteditable]:hover {
+            color: black;
+            background-color: #FFF9AE;
         }
         .layer {
             background-color: #f1f1f1;
@@ -16,16 +27,29 @@
             border:  1px solid #ccc;
             margin-bottom: 1em;
         }
+
+        /* Nodes */
+
         circle {
             fill: #f1f1f1;
             stroke: black;
             stroke-width: 2px;
         }
-        .edgePath {
-            stroke-width: 2px;
-            stroke: #666;
-        }
         text {
+        }
+
+        /* Edges */
+
+        .edgePath path {
+            stroke-width: 2px;
+        }
+        .edgePath path,
+        .edgePath marker {
+            stroke: #555;
+        }
+        .edgePath marker {
+            stroke-width: 0;
+            fill:  #555;
         }
     </style>
 </head>
@@ -48,6 +72,7 @@
                             <tr>
                                 <th>Label</th>
                                 <th>Weight</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -125,7 +150,6 @@
 <script src="bootstrap.min.js"></script>
 
 <script src="d3.min.js"></script>
-<!-- <script src="dagre.min.js"></script> -->
 <script src="dagre-d3.min.js"></script>
 <script>
     $(document).ready(function(){
@@ -171,7 +195,8 @@
                     // Link previous layers' nodes to all of this layers' nodes.
                     var prev_layer = network[layer_k - 1];
                     $.each(prev_layer.factors, function(k, prev_factor){
-                        g.setEdge(prev_factor.id, factor.id, {label: prev_factor.weight});
+                        console.log(prev_factor.weight);
+                        g.setEdge(prev_factor.id, factor.id, {arrowhead: 'vee', label: prev_factor.weight});
                     });
                 });
             });
@@ -205,8 +230,18 @@
 
         $('.layers').on('click', '#add-factor', function(e){
             e.preventDefault();
-            var row = '<tr><td contenteditable="true">Varname</td><td contenteditable="true">0.0</td></tr>';
+            var row = ['<tr><td contenteditable="true">Varname</td>',
+                       '<td contenteditable="true">0.0</td>',
+                       '<td><a href="#" class="remove-factor btn btn-danger btn-xs">',
+                       '<span class="fa fa-times"></span></a></td></tr>'
+                       ].join('');
             $(this).parent().find('table').find('tbody').append(row);
+            updateNetwork();
+            reRender();
+        });
+
+        $('.layers').on('click', '.remove-factor', function(){
+            $(this).parent().parent().remove();
             updateNetwork();
             reRender();
         });
@@ -231,7 +266,7 @@
                 $(layer).find('table tbody > tr').each(function(i, factor){
                     layer_factors.push({
                         label: $(factor).find('td:first').text(),
-                        weight: $(factor).find('td:last').text(),
+                        weight: $(factor).find('td').eq(1).text(),
                         id: uid()
                     })
                 });
