@@ -8,6 +8,7 @@ $(document).ready(function(){
     // Create the renderer
     var render = new dagreD3.render();
     var network = [];
+    var layers = $('.layers');
 
     function uid() {
         function r() {
@@ -106,22 +107,18 @@ $(document).ready(function(){
         });
     }
 
-    $('.layers').on('click', '.node-active', function(e){
+    layers.on('click', '.node-active', function(e){
         updateNetwork();
         reRender();
     });
 
-    $('.layers').on('keypress keyup keydown', '[contenteditable]', function(e){
+    layers.on('keypress keyup keydown', '[contenteditable]', function(e){
         e.stopImmediatePropagation();
         updateNetwork();
         reRender();
     });
 
-    function translate(x, y) {
-        return 'translate(' + x + ',' + y + ')';
-    }
-
-    $('.layers').on('click', '#add-factor', function(e){
+    layers.on('click', '#add-factor', function(e){
         e.preventDefault();
         var row = ['<tr><td contenteditable="true">Varname</td>',
                    '<td contenteditable="true">0</td>',
@@ -134,7 +131,7 @@ $(document).ready(function(){
         reRender();
     });
 
-    $('.layers').on('click', '.remove-factor', function(){
+    layers.on('click', '.remove-factor', function(){
         $(this).parent().parent().remove();
         updateNetwork();
         reRender();
@@ -152,6 +149,10 @@ $(document).ready(function(){
         updateNetwork();
         reRender();
     });
+
+    function translate(x, y) {
+        return 'translate(' + x + ',' + y + ')';
+    }
 
     function updateNetwork() {
         // Reset value each time
