@@ -1,4 +1,6 @@
 $(document).ready(function(){
+    // Get a bunch of random colors to start with. Likelihood of going over 100 layers is very low.
+    var color_seed = d3.map(d3.range(100), getRandomColor).keys();
     var num_layers = 1;
     // Create the input graph
     var g = new dagreD3.graphlib.Graph({directed: true, compound: true, multigraph: false}).setGraph({});
@@ -12,6 +14,13 @@ $(document).ready(function(){
             return ~~(Math.random() * 10000);
         }
         return r() + '-' + r() + '-' + r();
+    }
+
+    function getRandomColor() {
+        function rgb() {
+            return ~~(Math.random() * 255);
+        }
+        return ['rgba(', rgb(), ',', rgb(), ',', rgb(), ',', '1)'].join('');
     }
 
     // Set up an SVG group so that we can translate the final graph.
@@ -42,7 +51,7 @@ $(document).ready(function(){
             g.setNode(layer.id, {
                 label: layer.name + ' / Sum = ' + sum + ' / Threshold = ' + layer.threshold + ' Will fire? ' + (sum >= layer.threshold ? 'Yes': 'No'),
                 clusterLabelPos: 'bottom',
-                style: 'fill: #D0FAE4'
+                style: 'fill: #F7F7F7; stroke-width: 4px; stroke: ' + layer.color
             });
             curr_layer_index += 1;
             $.each(layer.factors, function(factors_k, factor){
@@ -79,6 +88,7 @@ $(document).ready(function(){
     });
 
     $('.layers').on('keypress keyup keydown', '[contenteditable]', function(e){
+        e.stopImmediatePropagation();
         updateNetwork();
         reRender();
     });
@@ -109,9 +119,11 @@ $(document).ready(function(){
     $('#add-layer').on('click', function(e){
         e.preventDefault();
         var layer = $('.layer').last().clone();
-        num_layers = $('.layer').length + 1;
+        var color_label = color_seed.pop();
         layer.find('tbody').empty();
-        layer.find('.layername').text('Layer ' + num_layers);
+        layer.find('.layername').text('Layer ' + $('.layer').length + 1);
+        layer.css('border-top', '10px solid ' + color_label)
+            .attr('data-color', color_label);
         $('.layers').append(layer);
         updateNetwork();
         reRender();
@@ -134,6 +146,7 @@ $(document).ready(function(){
             network.push({
                 name: layer.find('.layername').text(),
                 factors: layer_factors,
+                color: layer.data().color,
                 threshold: parseInt(layer.find('.threshold').text(), 10),
                 id: uid()
             });

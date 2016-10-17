@@ -1,8 +1,6 @@
 # A neural network visual modeling tool
 
 ## TODO:
-* firing threshold visualization
-* sum of weights on each layer visualization
 * Allow toggling active/inactive
 * allow have run simulation
 * validator for indivudal weights
@@ -14,3 +12,5 @@
 * subdue edge if node is active
 * validator for final layer having only one node
 * have an "answer" or something for output of final node
+* visual cleanup/polish (overlapping text, labels, etc)
+* color code layers for mapping from box to group (visual aid)
