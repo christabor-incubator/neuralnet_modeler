@@ -31,7 +31,9 @@ body {
 .node text {
 }
 .node.inactive circle,
-.node.inactive text {
+.node.inactive text,
+.edgePath.inactive path,
+.edgePath.inactive marker {
     opacity: 0.3;
 }
 

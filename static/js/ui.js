@@ -71,8 +71,14 @@ $(document).ready(function(){
                 // Link previous layers' nodes to all of this layers' nodes.
                 var prev_layer = network[layer_k - 1];
                 $.each(prev_layer.factors, function(k, prev_factor){
-                    g.setEdge(prev_factor.id, factor.id, {lineInterpolate: 'basis', arrowhead: 'vee', label: prev_factor.weight});
+                    g.setEdge(prev_factor.id, factor.id, {
+                        lineInterpolate: 'basis',
+                        arrowhead: 'vee',
+                        label: prev_factor.weight
+                    });
                 });
+                // Set edges to inactive/active
+                setEdges(factor.id, factor.is_active ? 'active' : 'inactive');
             });
         });
 
@@ -80,6 +86,24 @@ $(document).ready(function(){
         render(svg_group, g);
 
         svg.attr('viewBox', '0 0 ' + g.graph().width + ' ' + g.graph().height);
+    }
+
+    function isRoot(node_id) {
+        return g.inEdges(node_id).length === 0;
+    }
+
+    function isLeaf(node_id) {
+        return g.outEdges(node_id).length === 0;
+    }
+
+    function setEdges(node_id, state) {
+        // Set ingoing / outgoing edges to this node inactive
+        // if it's inactive, otherwise, active.
+        var edges = g.nodeEdges(node_id);
+        edges.forEach(function(edge, k){
+            var edgedata = g.edge(edge.v, edge.w);
+            g.setEdge(edge.v, edge.w, $.extend(edgedata, {class: state}));
+        });
     }
 
     $('.layers').on('click', '.node-active', function(e){
