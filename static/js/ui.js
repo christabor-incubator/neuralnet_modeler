@@ -7,10 +7,6 @@ $(document).ready(function(){
     var render = new dagreD3.render();
     var network = [];
 
-    // var zoom = d3.behavior.zoom().on("zoom", function() {
-    //     svg_group.attr("transform", "translate(" + d3.event.translate + ")" + "scale(" + d3.event.scale + ")");
-    // });
-
     function uid() {
         function r() {
             return ~~(Math.random() * 10000);
@@ -74,19 +70,7 @@ $(document).ready(function(){
         // Run the renderer. This is what draws the final graph.
         render(svg_group, g);
 
-        // Center the graph
-        // var x_center_offset = (svg_width - g.graph().width) / 2;
-        // svg_group.attr('transform', translate(svg_width / 2, svg_height / 2));
-        // svg_group.attr('transform', 'translate(' + x_center_offset + ', 20)');
-        // svg.attr('height', g.graph().height + 40);
         svg.attr('viewBox', '0 0 ' + g.graph().width + ' ' + g.graph().height);
-
-        // svg.call(zoom);
-        // var initialScale = 0.75;
-        // zoom.translate([(svg.attr("width") - g.graph().width * initialScale) / 2, 20])
-        //     .scale(initialScale)
-        //     .event(svg);
-        // svg.attr('height', g.graph().height * initialScale + 40);
     }
 
     $('.layers').on('click', '.node-active', function(e){
@@ -94,7 +78,7 @@ $(document).ready(function(){
         reRender();
     });
 
-    $('.layers').on('keypress', '[contenteditable]', function(e){
+    $('.layers').on('keypress keyup keydown', '[contenteditable]', function(e){
         updateNetwork();
         reRender();
     });
