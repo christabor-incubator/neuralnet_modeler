@@ -42,6 +42,12 @@ $(document).ready(function(){
         return d3.sum(weights);
     }
 
+    function getLayerType(index, max) {
+        if(index === 0) {return '(Input layer)';}
+        if(index === max - 1) {return '(Output layer)';}
+        return '(Hidden layer)';
+    }
+
     function reRender() {
         clearGraph();
         var num_layers = network.length;
@@ -50,7 +56,7 @@ $(document).ready(function(){
             // Set layer label (group)
             var sum = getSum(curr_layer_index);
             g.setNode(layer.id, {
-                label: layer.name + ' / Sum = ' + sum + ' / Threshold = ' + layer.threshold + ' Will fire? ' + (sum >= layer.threshold ? 'Yes': 'No'),
+                label: getLayerType(curr_layer_index, num_layers) + ' ' + layer.name + ' / Sum = ' + sum + ' / Threshold = ' + layer.threshold + ' Will fire? ' + (sum >= layer.threshold ? 'Yes': 'No'),
                 clusterLabelPos: 'bottom',
                 style: 'fill: #F7F7F7; stroke-width: 4px; stroke: ' + layer.color
             });
