@@ -50,6 +50,8 @@ $(document).ready(function(){
     }
 
     function reRender() {
+        var wont_fire_html = '<span class="label label-danger">Won\'t fire <span class="fa fa-times"></span></span>';
+        var will_fire_html = '<span class="label label-success">Will fire <span class="fa fa-check"></span></span>';
         clearGraph();
         g.setGraph({
              rankdir: direction_toggle.val() === 'horizontal' ? 'LR' : 'TB',
@@ -59,11 +61,13 @@ $(document).ready(function(){
         $.each(network, function(layer_k, layer){
             // Set layer label (group)
             var sum = getSum(curr_layer_index);
+            var will_fire = sum >= layer.threshold;
             g.setNode(layer.id, {
-                label: getLayerType(curr_layer_index, num_layers) + ' ' + layer.name + ' / Sum = ' + sum + ' / Threshold = ' + layer.threshold + ' Will fire? ' + (sum >= layer.threshold ? 'Yes': 'No'),
+                label: getLayerType(curr_layer_index, num_layers) + ' ' + layer.name + ' / Sum = ' + sum + ' / Threshold = ' + layer.threshold + ' Will fire? ' + (will_fire ? 'Yes': 'No'),
                 clusterLabelPos: 'bottom',
                 style: 'fill: #F7F7F7; stroke-width: 4px; stroke: ' + layer.color
             });
+            layers.find('.layer').eq(curr_layer_index).find('.firingstatus').html(will_fire ? will_fire_html : wont_fire_html);
             curr_layer_index += 1;
             $.each(layer.factors, function(factors_k, factor){
                 // Set layer node

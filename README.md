@@ -14,7 +14,6 @@ The goal is to create a tool that bridges the gap between using a neural net for
 * visual cleanup/polish (overlapping text, labels, etc)
 * hover highlighting for nodes/edges when editing on right side
 * visual input box formatting for errors/validation
-* checkmark/etc visual indicator when sum is enough to fire
 
 ## New components
 
