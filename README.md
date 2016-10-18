@@ -10,7 +10,6 @@ The goal is to create a tool that bridges the gap between using a neural net for
 * margins on svg
 * svg resizing betterment
 * validator for final layer having only one node
-* have an "answer" or something for output of final node
 * visual cleanup/polish (overlapping text, labels, etc)
 * hover highlighting for nodes/edges when editing on right side
 * visual input box formatting for errors/validation

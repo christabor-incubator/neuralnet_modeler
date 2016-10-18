@@ -10,6 +10,7 @@ $(document).ready(function(){
     var network = [];
     var layers = $('.layers');
     var direction_toggle = $('#rankdir');
+    var recurrent_toggle = $('#recurrent');
 
     function uid() {
         function r() {
@@ -49,9 +50,22 @@ $(document).ready(function(){
         return '(Hidden layer)';
     }
 
+    function isHiddenLayer(index, max) {
+        return getLayerType(index, max) === '(Hidden layer)';
+    }
+
+    function isInputLayer(index, max) {
+        return getLayerType(index, max) === '(Input layer)';
+    }
+
+    function isOutputLayer(index, max) {
+        return getLayerType(index, max) === '(Output layer)';
+    }
+
     function reRender() {
         var wont_fire_html = '<span class="label label-danger">Won\'t fire <span class="fa fa-times"></span></span>';
         var will_fire_html = '<span class="label label-success">Will fire <span class="fa fa-check"></span></span>';
+        var is_recurrent = recurrent_toggle.prop('checked');
         clearGraph();
         g.setGraph({
              rankdir: direction_toggle.val() === 'horizontal' ? 'LR' : 'TB',
@@ -62,6 +76,7 @@ $(document).ready(function(){
             // Set layer label (group)
             var sum = getSum(curr_layer_index);
             var will_fire = sum >= layer.threshold;
+            var is_hidden = isHiddenLayer(curr_layer_index, num_layers);
             g.setNode(layer.id, {
                 label: getLayerType(curr_layer_index, num_layers) + ' ' + layer.name + ' / Sum = ' + sum + ' / Threshold = ' + layer.threshold + ' Will fire? ' + (will_fire ? 'Yes': 'No'),
                 clusterLabelPos: 'bottom',
@@ -78,6 +93,11 @@ $(document).ready(function(){
                     width: 50,
                     height: 25
                 };
+                if(is_recurrent && is_hidden) {
+                    g.setEdge(factor.id, factor.id);
+                } else {
+                    g.removeEdge(factor.id, factor.id);
+                }
                 g.setNode(factor.id, opts);
                 // Add to group for visual grouping
                 g.setParent(factor.id, layer.id);
@@ -127,7 +147,7 @@ $(document).ready(function(){
     }
 
     direction_toggle.on('change', renderAndUpdateEvent);
-
+    recurrent_toggle.on('click', renderAndUpdateEvent);
     layers.on('click', '.node-active', renderAndUpdateEvent);
 
     layers.on('keypress keyup keydown', '[contenteditable]', function(e){
