@@ -3,12 +3,13 @@ $(document).ready(function(){
     var color_seed = d3.map(d3.range(100), getRandomColor).keys();
     var num_layers = 1;
     // Create the input graph
-    var g = new dagreD3.graphlib.Graph({directed: true, compound: true, multigraph: false}).setGraph({});
+    var g = new dagreD3.graphlib.Graph({directed: true, compound: true, multigraph: false});
     var padding = 10;
     // Create the renderer
     var render = new dagreD3.render();
     var network = [];
     var layers = $('.layers');
+    var direction_toggle = $('#rankdir');
 
     function uid() {
         function r() {
@@ -50,6 +51,9 @@ $(document).ready(function(){
 
     function reRender() {
         clearGraph();
+        g.setGraph({
+             rankdir: direction_toggle.val() === 'horizontal' ? 'LR' : 'TB',
+        });
         var num_layers = network.length;
         var curr_layer_index = 0;
         $.each(network, function(layer_k, layer){
@@ -113,15 +117,18 @@ $(document).ready(function(){
         });
     }
 
-    layers.on('click', '.node-active', function(e){
+    function renderAndUpdateEvent(e) {
         updateNetwork();
         reRender();
-    });
+    }
+
+    direction_toggle.on('change', renderAndUpdateEvent);
+
+    layers.on('click', '.node-active', renderAndUpdateEvent);
 
     layers.on('keypress keyup keydown', '[contenteditable]', function(e){
         e.stopImmediatePropagation();
-        updateNetwork();
-        reRender();
+        renderAndUpdateEvent(e);
     });
 
     layers.on('click', '#add-factor', function(e){
