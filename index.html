@@ -22,8 +22,11 @@
                 <div class="well">
                     <fieldset>
                         <legend>Layer options</legend>
-                        <label for="input-type">Input type</label>
-                        <select id="input-type">
+                        <label for="neuron-type">
+                            Neuron type
+                            <small><br>(sigmoid requires floating point values between 0-1, whereas perceptron is either 0/1)</small>
+                        </label>
+                        <select id="neuron-type">
                             <option value="perceptron">Perceptron</option>
                             <option value="sigmoid">Sigmoid</option>
                         </select>

@@ -9,10 +9,10 @@ $(document).ready(function(){
     var render = new dagreD3.render();
     var network = [];
     var layers = $('.layers');
-    var active_layer_type = 'perceptron';
+    var active_neuron_type = 'perceptron';
     var direction_toggle = $('#rankdir');
     var recurrent_toggle = $('#recurrent');
-    var layer_type_toggle = $('#input-type');
+    var neuron_type_toggle = $('#neuron-type');
 
     function uid() {
         function r() {
@@ -163,7 +163,7 @@ $(document).ready(function(){
         var weight = null;
         if(el.data().editType === 'weight') {
             var weight =el.text();
-            if(active_layer_type === 'sigmoid') {
+            if(active_neuron_type === 'sigmoid') {
                 weight = parseFloat(weight, 10);
             } else {
                 weight = parseInt(weight, 10);
@@ -174,8 +174,9 @@ $(document).ready(function(){
 
     layers.on('click', '#add-factor', function(e){
         e.preventDefault();
+        var default_weight = active_neuron_type == 'perceptron' ? '0' : '0.0';
         var row = ['<tr><td contenteditable="true" data-edit-type="label">Varname</td>',
-                   '<td contenteditable="true" data-edit-type="weight">0</td>',
+                   '<td contenteditable="true" data-edit-type="weight">' + default_weight + '</td>',
                    '<td><input type="checkbox" checked="checked" class="node-active" /></td>',
                    '<td><a href="#" class="remove-factor btn btn-danger btn-xs">',
                    '<span class="fa fa-times"></span></a></td></tr>'
@@ -191,8 +192,8 @@ $(document).ready(function(){
         reRender();
     });
 
-    layer_type_toggle.on('change', function(e){
-        active_layer_type = $(this).val();
+    neuron_type_toggle.on('change', function(e){
+        active_neuron_type = $(this).val();
     });
 
     $('#add-layer').on('click', function(e){
