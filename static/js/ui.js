@@ -154,18 +154,23 @@ $(document).ready(function(){
 
     layers.on('keypress keyup keydown', '[contenteditable]', function(e){
         e.stopImmediatePropagation();
+        renderAndUpdateEvent(e);
+    });
+
+    function getWeightForType(el) {
         // Ensure the weight values are appropriate for
         // the neuron type (sigmoid, perceptron, etc)
-        if($(this).data().editType === 'weight') {
-            var weight = $(this).text().strip();
+        var weight = null;
+        if(el.data().editType === 'weight') {
+            var weight =el.text();
             if(active_layer_type === 'sigmoid') {
                 weight = parseFloat(weight, 10);
             } else {
                 weight = parseInt(weight, 10);
             }
         }
-        renderAndUpdateEvent(e);
-    });
+        return weight;
+    }
 
     layers.on('click', '#add-factor', function(e){
         e.preventDefault();
